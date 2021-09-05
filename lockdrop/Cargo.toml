@@ -14,19 +14,20 @@ sp-runtime = { git = "https://github.com/paritytech/substrate", default-features
 frame-system = { git = "https://github.com/paritytech/substrate", default-features = false }
 frame-support = { git = "https://github.com/paritytech/substrate", default-features = false }
 
-frame-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, optional = true }
-
-[dev-dependencies]
 sp-core = { git = "https://github.com/paritytech/substrate", default-features = false }
 sp-io = { git = "https://github.com/paritytech/substrate", default-features = false }
 pallet-balances = { git = "https://github.com/paritytech/substrate", default-features = false }
+
+frame-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, optional = true }
 
 [features]
 default = ["std"]
 std = [
 	"serde",
 	"codec/std",
+	"sp-core/std",
 	"sp-std/std",
+	"sp-io/std",
 	"sp-runtime/std",
 	"pallet-balances/std",
 	"frame-system/std",
