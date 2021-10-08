@@ -19,6 +19,7 @@ sp-io = { git = "https://github.com/paritytech/substrate", default-features = fa
 pallet-balances = { git = "https://github.com/paritytech/substrate", default-features = false }
 
 frame-benchmarking = { git = "https://github.com/paritytech/substrate", default-features = false, optional = true }
+scale-info = { version = "1.0.0", default-features = false, features = ["derive"] }
 
 [features]
 default = ["std"]
@@ -33,5 +34,6 @@ std = [
 	"frame-system/std",
 	"frame-support/std",
 	"frame-benchmarking/std",
+	"scale-info/std",
 ]
 runtime-benchmarks = ["frame-benchmarking"]

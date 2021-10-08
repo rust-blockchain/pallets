@@ -27,6 +27,7 @@ mod default_weights;
 mod tests;
 
 use codec::{Decode, Encode};
+use scale_info::TypeInfo;
 use frame_support::{
 	decl_error, decl_event, decl_module, decl_storage, ensure,
 	storage::child,
@@ -49,26 +50,26 @@ pub trait WeightInfo {
 
 pub type CampaignIdentifier = [u8; 4];
 
-#[derive(Encode, Decode, Clone, Eq, PartialEq, RuntimeDebug)]
+#[derive(Encode, Decode, TypeInfo, Clone, Eq, PartialEq, RuntimeDebug)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct CampaignInfo<T: Config> {
-	end_block: T::BlockNumber,
-	min_lock_end_block: T::BlockNumber,
+pub struct CampaignInfo<BlockNumber> {
+	end_block: BlockNumber,
+	min_lock_end_block: BlockNumber,
 	child_root: Option<Vec<u8>>,
 }
 
-#[derive(Encode, Decode, Clone, Eq, PartialEq, RuntimeDebug)]
+#[derive(Encode, Decode, TypeInfo, Clone, Eq, PartialEq, RuntimeDebug)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct LockInfo<T: Config> {
-	balance: BalanceOf<T>,
-	end_block: T::BlockNumber,
+pub struct LockInfo<BlockNumber, Balance> {
+	balance: Balance,
+	end_block: BlockNumber,
 }
 
-#[derive(Encode, Decode, Clone, Eq, PartialEq, RuntimeDebug)]
+#[derive(Encode, Decode, TypeInfo, Clone, Eq, PartialEq, RuntimeDebug)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct ChildLockData<T: Config> {
-	balance: BalanceOf<T>,
-	end_block: T::BlockNumber,
+pub struct ChildLockData<BlockNumber, Balance> {
+	balance: Balance,
+	end_block: BlockNumber,
 	payload: Option<Vec<u8>>,
 }
 
@@ -93,8 +94,8 @@ pub type BalanceOf<T> =
 
 decl_storage! {
 	trait Store for Module<T: Config> as Eras {
-		Campaigns get(fn campaigns): map hasher(blake2_128_concat) CampaignIdentifier => Option<CampaignInfo<T>>;
-		Locks get(fn locks): double_map hasher(blake2_128_concat) CampaignIdentifier, hasher(blake2_128_concat) T::AccountId => Option<LockInfo<T>>;
+		Campaigns get(fn campaigns): map hasher(blake2_128_concat) CampaignIdentifier => Option<CampaignInfo<T::BlockNumber>>;
+		Locks get(fn locks): double_map hasher(blake2_128_concat) CampaignIdentifier, hasher(blake2_128_concat) T::AccountId => Option<LockInfo<T::BlockNumber, BalanceOf<T>>>;
 	}
 }
 
@@ -276,7 +277,7 @@ impl<T: Config> Module<T> {
 	fn child_data_put(
 		identifier: &CampaignIdentifier,
 		account_id: &T::AccountId,
-		data: &ChildLockData<T>,
+		data: &ChildLockData<T::BlockNumber, BalanceOf<T>>,
 	) {
 		account_id.using_encoded(|account_id| {
 			child::put(&Self::child_info(identifier), &account_id, &data)
@@ -286,7 +287,7 @@ impl<T: Config> Module<T> {
 	pub fn child_data_get(
 		identifier: &CampaignIdentifier,
 		account_id: &T::AccountId,
-	) -> Option<ChildLockData<T>> {
+	) -> Option<ChildLockData<T::BlockNumber, BalanceOf<T>>> {
 		account_id
 			.using_encoded(|account_id| child::get(&Self::child_info(identifier), &account_id))
 	}
